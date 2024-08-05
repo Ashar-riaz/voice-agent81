@@ -37,7 +37,7 @@ os.environ['SSL_CERT'] = ''
 os.environ['SSL_KEY'] = ''
 os.environ['OUTLINES_CACHE_DIR'] = '/tmp/.outlines'
 
-deepgram_voice: str = "aura-asteria-en"
+deepgram_voice = "aura-asteria-en"
 
 # Manually set API keys
 openai_api_key = "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"
@@ -178,54 +178,22 @@ def start_bot(room_url: str, token: str = None):
         asyncio.run(main(room_url, token))
 
     check_vllm_model_status()
-    process = Process(target=target, daemon=True)
-    process.start()
-    process.join()  # Wait for the process to complete
-    return {"message": "session finished"}
+    p = Process(target=target)
+    p.start()
 
 def create_room():
-    url = "https://api.daily.co/v1/rooms/"
+    url = "https://api.daily.co/v1/rooms"
     headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {daily_api_key}"
+        "Authorization": f"Bearer {daily_api_key}",
+        "Content-Type": "application/json"
     }
     data = {
         "properties": {
-            "exp": int(time.time()) + 60*5, ##5 mins
-            "eject_at_room_exp" : True
+            "enable_chat": True,
+            "enable_knocking": False,
+            "exp": 10000000000
         }
     }
-
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        room_info = response.json()
-        token = create_token(room_info['name'])
-        if token and 'token' in token:
-            room_info['token'] = token['token']
-        else:
-            logger.error("Failed to create token")
-            return {"message": 'There was an error creating your room', "status_code": 500}
-        return room_info
-    else:
-        data = response.json()
-        if data.get("error") == "invalid-request-error" and "rooms reached" in data.get("info", ""):
-            logger.error("We are currently at capacity for this demo. Please try again later.")
-            return {"message": "We are currently at capacity for this demo. Please try again later.", "status_code": 429}
-        logger.error(f"Failed to create room: {response.status_code}")
-        return {"message": 'There was an error creating your room', "status_code": 500}
-
-def create_token(room_name: str):
-    url = "https://api.daily.co/v1/meeting-tokens"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {daily_api_key}"
-    }
-    data = {
-        "properties": {
-            "room_name": room_name
-        }
-    }
-
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         token_info = response.json()
