@@ -24,7 +24,6 @@ from pipecat.frames.frames import LLMMessagesFrame, EndFrame
 from pipecat.processors.aggregators.llm_response import (
     LLMAssistantResponseAggregator, LLMUserResponseAggregator
 )
-#from model import load_model
 from helpers import (
     ClearableDeepgramTTSService,
     AudioVolumeTimer,
@@ -44,9 +43,7 @@ deepgram_voice: str = "aura-asteria-en"
 openai_api_key = "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"
 daily_api_key = "9929b1fef86091d59f4524358f970bc47328f17501d8fdf5052b6a9a9b046d77"
 
-
 model_id = "styalai/phi-2_quantize_gptq"
-#model = load_model(model_id)
 
 # Run vllM Server in background process
 def start_server():
@@ -238,10 +235,12 @@ def create_token(room_name: str):
         return None
 
 async def handle_create_room(request):
+    logger.debug("handle_create_room endpoint called")
     room_info = create_room()
     return web.json_response(room_info)
 
 async def handle_start_bot(request):
+    logger.debug("handle_start_bot endpoint called")
     request_data = await request.json()
     room_url = request_data.get('room_url')
     token = request_data.get('token')
